@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { Project, User } = require('../models');
+const { BlogPost, User } = require('../models');
 const withAuth = require('../utils/auth');
 
 router.get('/', async (req, res) => {
@@ -79,8 +79,21 @@ router.get('/login', (req, res) => {
   res.render('login');
 });
 
-router.get('/dashboard', (req, res) => {
-  console.log(req.session.logged_in)
+router.get('/dashboard', async (req, res) => {
+  // console.log(req.session.logged_in)
+
+  const dbBlogPosts = await BlogPost.findAll({
+      include: [
+        {
+          model: User,
+        },
+      ],
+    });
+
+    const BlogPosts = dbBlogPosts.map((gallery) =>
+      gallery.get({ plain: true })
+    );
+
   if (req.session.logged_in == undefined) {
     res.redirect('/login');
     return;
@@ -88,6 +101,7 @@ router.get('/dashboard', (req, res) => {
 
   res.render('dashboard',
     {
+      BlogPosts,
       newpost: false,
       logged_in: req.session.logged_in
 
