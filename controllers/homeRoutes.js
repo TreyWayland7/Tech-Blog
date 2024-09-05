@@ -5,22 +5,22 @@ const withAuth = require('../utils/auth');
 router.get('/', async (req, res) => {
   try {
     // Get all projects and JOIN with user data
-    const projectData = await Project.findAll({
-      include: [
-        {
-          model: User,
-          attributes: ['name'],
-        },
-      ],
-    });
+    // const usernames = await User.findAll({
+    //   include: [
+    //     {
+    //       model: User,
+    //       attributes: ['username'],
+    //     },
+    //   ],
+    // });
 
     // Serialize data so the template can read it
-    const projects = projectData.map((project) => project.get({ plain: true }));
+    // const projects = projectData.map((project) => project.get({ plain: true }));
 
     // Pass serialized data and session flag into template
-    res.render('homepage', { 
-      projects, 
-      logged_in: req.session.logged_in 
+    res.render('home', {
+      logged_in: req.session.logged_in
+
     });
   } catch (err) {
     res.status(500).json(err);
@@ -72,11 +72,55 @@ router.get('/profile', withAuth, async (req, res) => {
 router.get('/login', (req, res) => {
   // If the user is already logged in, redirect the request to another route
   if (req.session.logged_in) {
-    res.redirect('/profile');
+    res.redirect('/');
     return;
   }
 
   res.render('login');
+});
+
+router.get('/dashboard', (req, res) => {
+  console.log(req.session.logged_in)
+  if (req.session.logged_in == undefined) {
+    res.redirect('/login');
+    return;
+  }
+
+  res.render('dashboard',
+    {
+      newpost: false,
+      logged_in: req.session.logged_in
+
+    }
+  );
+});
+
+router.get('/dashboard/new', (req, res) => {
+  console.log(req.session.logged_in)
+  if (req.session.logged_in == undefined) {
+    res.redirect('/login');
+    return;
+  }
+
+  res.render('newPost',
+    {
+      newpost: true,
+      logged_in: req.session.logged_in
+
+    }
+  );
+});
+
+
+router.get('/signup', (req, res) => {
+  // If the user is already logged in, redirect the request to another route
+  // console.log(req.session.logged_in)
+  // if (req.session.logged_in == undefined) {
+  //   res.redirect('/login');
+  //   return;
+  // }
+
+  res.render('signup');
 });
 
 module.exports = router;
