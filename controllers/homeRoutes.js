@@ -81,8 +81,8 @@ router.get('/login', (req, res) => {
 
 router.get('/dashboard', async (req, res) => {
   // console.log(req.session.logged_in)
-
-  const dbBlogPosts = await BlogPost.findAll({
+  try{
+    const dbBlogPosts = await BlogPost.findAll({
       include: [
         {
           model: User,
@@ -107,6 +107,11 @@ router.get('/dashboard', async (req, res) => {
 
     }
   );
+  }catch(err){
+    console.log(err);
+    res.status(500).json(err);
+  }
+ 
 });
 
 router.get('/dashboard/new', (req, res) => {
@@ -123,6 +128,71 @@ router.get('/dashboard/new', (req, res) => {
 
     }
   );
+});
+
+
+router.get('/dashboard/post/:id', async (req, res) => {
+try {
+  const dbBlogPostData = await BlogPost.findByPk(req.params.id, {
+    include: [
+      {
+        model: User,
+      
+            },
+    ],
+  });
+
+  const blogPost = dbBlogPostData.get({ plain: true });
+
+
+  console.log(blogPost)
+  if (req.session.logged_in == undefined) {
+    res.redirect('/login');
+    return;
+  }
+
+  res.render('post',
+    {
+      blogPost,
+      logged_in: req.session.logged_in
+    }
+  );
+} catch (error) {
+  console.log(error);
+  res.status(500).json(error);
+}
+
+  
+});
+
+router.put('/dashboard/post/:id', async (req, res) => {
+  try {
+      console.log("put method here")
+    const { name, description } = req.body;
+
+    if (req.session.logged_in === undefined) {
+      res.redirect('/login');
+      return;
+    }
+
+    const blogPost = await BlogPost.findByPk(req.params.id);
+
+    if (!blogPost) {
+      res.status(404).json({ message: 'Blog post not found' });
+      return;
+    }
+
+    await blogPost.update({
+      name,
+      description
+    });
+
+    res.json({ message: 'Blog post updated successfully' });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
 });
 
 
