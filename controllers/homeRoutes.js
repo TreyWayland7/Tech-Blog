@@ -196,6 +196,33 @@ router.put('/dashboard/post/:id', async (req, res) => {
 });
 
 
+router.delete('/dashboard/post/:id', async (req, res) => {
+  try {
+      console.log("delete method here")
+
+    if (req.session.logged_in === undefined) {
+      res.redirect('/login');
+      return;
+    }
+
+    const blogPost = await BlogPost.findByPk(req.params.id);
+
+    if (!blogPost) {
+      res.status(404).json({ message: 'Blog post not found' });
+      return;
+    }
+
+    await blogPost.destroy({});
+
+    res.json({ message: 'Blog post deleted successfully' });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+});
+
+
 router.get('/signup', (req, res) => {
   // If the user is already logged in, redirect the request to another route
   // console.log(req.session.logged_in)
